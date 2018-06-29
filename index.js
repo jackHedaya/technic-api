@@ -1,12 +1,13 @@
 const cheerio = require('cheerio');
-const request = require('sync-request');
+const requestSync = require('sync-request');
+const request = require('request');
 const fs = require('fs');
 
 exports.searchPacksSync = (packName) => {
     var page = 1;
 
     var extractPacks = (url, prevPacks) => {
-        var req = request('GET', url);
+        var req = requestSync('GET', url);
 
         if (req.statusCode >= 300) {
             var err = new Error(
@@ -21,22 +22,22 @@ exports.searchPacksSync = (packName) => {
             throw err;
         }
 
-        var packs = prevPacks;
+        var packs = prevPacks || [];
 
         const $ = cheerio.load(req.body);
 
         const pagePacks = $('.modpack-image a, .modpack-title a')
 
-        pagePacks.each (function (index, element) {
+        pagePacks.each(function (index, element) {
             packs.push({
                 //    Image                         No Image
-                name: $(this).children('img').attr ('title') || $(this).text(),
+                name: $(this).children('img').attr('title') || $(this).text(),
                 site: $(this).attr('href'),
                 image: $(this).children('img').attr('data-cfsrc') || null
             })
         })
 
-       
+
 
 
         page++;
@@ -49,9 +50,47 @@ exports.searchPacksSync = (packName) => {
         }
     }
 
-    return extractPacks(`https://technicpack.net/modpacks?q=${packName}&page=${page}`, []);
+    return extractPacks(`https://technicpack.net/modpacks?q=${packName}&page=${page}`);
 }
 
-console.log ("Start")
-console.log(exports.searchPacksSync('hexxit').length)
-console.log ("Finish")
+exports.searchPacks = (packName, callback) => {
+    var page = 1;
+
+    var extractPacks = (url, prevPacks) => {
+        var req = request(url, (error, response, body) => {
+            if (error) {
+                callback (error, null);
+                return;
+            }
+
+            const $ = cheerio.load(body);
+            var packs = prevPacks || [];
+
+            const pagePacks = $('.modpack-image a, .modpack-title a')
+
+            pagePacks.each(function () {
+                packs.push({
+                    //    Image                         No Image
+                    name: $(this).children('img').attr('title') || $(this).text(),
+                    site: $(this).attr('href'),
+                    image: $(this).children('img').attr('data-cfsrc') || null
+                })
+            })
+
+            page++;
+
+            if ($('a[rel="next"]').length > 0) {
+                return extractPacks(`https://technicpack.net/modpacks?q=${packName}&page=${page}`, packs)
+            }
+            else {
+                callback (null, packs);
+            }
+        });
+    }
+
+    extractPacks(`https://technicpack.net/modpacks?q=${packName}&page=${page}`);
+}
+
+console.log("Start")
+console.log (exports.searchPacksSync('hexxit').length);
+console.log("Finish")
