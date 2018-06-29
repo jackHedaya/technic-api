@@ -16,6 +16,7 @@ exports.searchPacksSync = (packName) => {
                 ':\n' +
                 req.body.toString(encoding)
             );
+            
             err.statusCode = this.statusCode;
             err.headers = this.headers;
             err.body = this.body;
