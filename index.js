@@ -25,15 +25,19 @@ exports.searchPacksSync = (packName) => {
 
         const $ = cheerio.load(req.body);
 
-        const pagePacks = $('.modpack-image a img, .modpack-title a')
-        pagePacks.map(x => {
+        const pagePacks = $('.modpack-image a, .modpack-title a')
+
+        pagePacks.each (function (index, element) {
             packs.push({
                 //    Image                         No Image
-                name: pagePacks[x].attribs.title || pagePacks[x].childNodes[0].data,
-                site: pagePacks[x].parent.attribs.href || pagePacks[x].attribs.href,
-                image: pagePacks[x].attribs["data-cfsrc"] || null
+                name: $(this).children('img').attr ('title') || $(this).text(),
+                site: $(this).attr('href'),
+                image: $(this).children('img').attr('data-cfsrc') || null
             })
-        });
+        })
+
+       
+
 
         page++;
 
@@ -49,5 +53,5 @@ exports.searchPacksSync = (packName) => {
 }
 
 console.log ("Start")
-console.log(exports.searchPacksSync('hexxit'))
+console.log(exports.searchPacksSync('hexxit').length)
 console.log ("Finish")
