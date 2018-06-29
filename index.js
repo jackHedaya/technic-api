@@ -1,26 +1,33 @@
 const cheerio = require('cheerio');
-const request = require('request');
+const request = require('sync-request');
 const fs = require('fs');
 
-const packName = "pixelspark";
-var page = 1;
+exports.searchPacksSync = (packName) => {
+    var page = 1;
 
-const packs = [];
+    var extractPacks = (url, prevPacks) => {
+        var req = request('GET', url);
 
-extractPacks(`https://technicpack.net/modpacks?q=${packName}&page=${page}`);
-
-function extractPacks (url) {
-    request(url, (error, response, html) => {
-        if (error) {
-            console.log(error);
-            return;
+        if (req.statusCode >= 300) {
+            var err = new Error(
+                'Server responded with status code ' +
+                req.statusCode +
+                ':\n' +
+                req.body.toString(encoding)
+            );
+            err.statusCode = this.statusCode;
+            err.headers = this.headers;
+            err.body = this.body;
+            throw err;
         }
-    
-        const $ = cheerio.load(html);
-    
+
+        var packs = prevPacks;
+
+        const $ = cheerio.load(req.body);
+
         const pagePacks = $('.modpack-image a img, .modpack-title a')
-        pagePacks.map (x => {
-            packs.push ({
+        pagePacks.map(x => {
+            packs.push({
                 //    Image                         No Image
                 name: pagePacks[x].attribs.title || pagePacks[x].childNodes[0].data,
                 site: pagePacks[x].parent.attribs.href || pagePacks[x].attribs.href,
@@ -28,16 +35,19 @@ function extractPacks (url) {
             })
         });
 
-        const pagePacksT = $('.modpack-title ')
-        
-        
         page++;
+
         if ($('a[rel="next"]').length > 0) {
-            extractPacks(`https://technicpack.net/modpacks?q=${packName}&page=${page}`)
+            return extractPacks(`https://technicpack.net/modpacks?q=${packName}&page=${page}`, packs)
         }
         else {
-            console.log (packs);
+            return packs;
         }
-    });
+    }
+
+    return extractPacks(`https://technicpack.net/modpacks?q=${packName}&page=${page}`, []);
 }
 
+console.log ("Start")
+console.log(exports.searchPacksSync('hexxit'))
+console.log ("Finish")
