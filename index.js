@@ -33,12 +33,12 @@ exports.searchPacksSync = (packName) => {
                 //    Image                         No Image
                 name: $(this).children('img').attr('title') || $(this).text(),
                 site: $(this).attr('href'),
-                image: $(this).children('img').attr('data-cfsrc') || null
+                image: $(this).children('img').attr('data-cfsrc') || null,
+                ratings: $('.ratings')[index].children[2].data.trim(),
+                downloads: $('.downloads')[index].children[2].data.trim(),
+                runs: $('.runs')[index].children[2].data.trim()
             })
         })
-
-
-
 
         page++;
 
@@ -59,7 +59,7 @@ exports.searchPacks = (packName, callback) => {
     var extractPacks = (url, prevPacks) => {
         var req = request(url, (error, response, body) => {
             if (error) {
-                callback (error, null);
+                callback(error, null);
                 return;
             }
 
@@ -73,7 +73,10 @@ exports.searchPacks = (packName, callback) => {
                     //    Image                         No Image
                     name: $(this).children('img').attr('title') || $(this).text(),
                     site: $(this).attr('href'),
-                    image: $(this).children('img').attr('data-cfsrc') || null
+                    image: $(this).children('img').attr('data-cfsrc') || null,
+                    ratings: $('.ratings')[index].children[2].data.trim(),
+                    downloads: $('.downloads')[index].children[2].data.trim(),
+                    runs: $('.runs')[index].children[2].data.trim()
                 })
             })
 
@@ -83,7 +86,7 @@ exports.searchPacks = (packName, callback) => {
                 return extractPacks(`https://technicpack.net/modpacks?q=${packName}&page=${page}`, packs)
             }
             else {
-                callback (null, packs);
+                callback(null, packs);
             }
         });
     }
@@ -92,5 +95,5 @@ exports.searchPacks = (packName, callback) => {
 }
 
 console.log("Start")
-console.log (exports.searchPacksSync('hexxit').length);
+console.log(exports.searchPacksSync('PokeReforged World Online'));
 console.log("Finish")
