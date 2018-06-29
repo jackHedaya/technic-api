@@ -16,7 +16,7 @@ exports.searchPacksSync = (packName) => {
                 ':\n' +
                 req.body.toString(encoding)
             );
-            
+
             err.statusCode = this.statusCode;
             err.headers = this.headers;
             err.body = this.body;
@@ -94,7 +94,3 @@ exports.searchPacks = (packName, callback) => {
 
     extractPacks(`https://technicpack.net/modpacks?q=${packName}&page=${page}`);
 }
-
-console.log("Start")
-console.log(exports.searchPacksSync('PokeReforged World Online'));
-console.log("Finish")
